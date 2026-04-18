@@ -15,15 +15,13 @@ with st.spinner("Fetching live data..."):
 if data.empty:
     st.error("No data found.")
 else:
-    latest_price = float(data['Close'].iloc[-1])
+    close_data = data['Close']
 
-    st.metric("Latest Price", f"{latest_price:.2f}")
-    st.line_chart(data['Close'])
+    # Handle empty or invalid data safely
+    if close_data.empty:
+        st.error("No price data available.")
+    else:
+        latest_price = close_data.dropna().iloc[-1]
 
-    # ✅ Download button
-    st.download_button(
-        label="Download Data as CSV",
-        data=data.to_csv(),
-        file_name=f"{stock}_data.csv",
-        mime="text/csv"
-    )
+        st.metric("Latest Price", f"{latest_price:.2f}")
+        st.line_chart(close_data)
