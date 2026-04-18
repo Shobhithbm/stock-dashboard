@@ -15,17 +15,22 @@ with st.spinner("Fetching live data..."):
 if data.empty:
     st.error("No data found.")
 else:
-    close_data = data['Close'].dropna()
+    # Ensure we always get a proper Series
+    close_data = data.get('Close')
 
-    if len(close_data) == 0:
-        st.error("No valid data found.")
+    if close_data is None:
+        st.error("Close data not found.")
     else:
-        latest_price = close_data.iloc[-1]
+        # Convert to Series if needed
+        if hasattr(close_data, "columns"):
+            close_data = close_data.squeeze()
 
-        try:
-            latest_price = float(latest_price)
-            st.metric("Latest Price", f"{latest_price:.2f}")
-        except:
-            st.error("Error reading latest price")
+        close_data = close_data.dropna()
 
-        st.line_chart(close_data)
+        if close_data.empty:
+            st.error("No valid data found.")
+        else:
+            latest_price = close_data.iloc[-1]
+
+            st.metric("Latest Price", round(latest_price, 2))
+            st.line_chart(close_data)
